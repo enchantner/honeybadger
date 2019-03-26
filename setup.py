@@ -14,7 +14,7 @@ def find_requires():
 if __name__ == "__main__":
     setup(
         name="honeybadger",
-        version="0.0.1",
+        version="0.3.0",
         description='honeybadger doesn\'t give a #$^&',
         packages=find_packages(),
         install_requires=find_requires(),
