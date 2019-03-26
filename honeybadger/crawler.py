@@ -1,9 +1,12 @@
+import argparse
 import asyncio
 import concurrent.futures
 import logging
 import sys
 import time
 import uuid
+
+import os.path
 
 import aiohttp
 import uvloop
@@ -183,5 +186,25 @@ def run_service(host, port):
     web.run_app(app, host=host, port=port)
 
 
+def build_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config', dest='config', action='store', type=str,
+        help='path to custom config',
+        default=os.path.join(os.path.dirname(__file__), "config.yaml")
+    )
+    parser.add_argument('-P', dest='port', action='store', type=int,
+        help='port for API', default=7777
+    )
+    return parser
+
+
+def main():
+    parser = build_parser()
+    params, other_params = parser.parse_known_args()
+    #conf = load_config(params.config)
+    run_service("0.0.0.0", params.port)
+
+
 if __name__ == "__main__":
-    run_service("0.0.0.0", 7777)
+    main()
