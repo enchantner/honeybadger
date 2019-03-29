@@ -1,3 +1,5 @@
+@Library('powerpony') _
+
 pipeline {
     agent any
 
@@ -5,6 +7,9 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
+                script {
+                    buildPythonPackage()
+                }
             }
         }
         stage('Test') {
