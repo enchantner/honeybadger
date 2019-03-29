@@ -13,6 +13,10 @@ import uvloop
 
 from aiohttp import web
 
+from prometheus_client import Histogram
+from prometheus_async import aio
+from prometheus_async.aio import time as metrics_time
+
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 logging.basicConfig(**{
@@ -24,6 +28,12 @@ logging.basicConfig(**{
     "stream": sys.stderr
 })
 logger = logging.getLogger(__name__)
+
+
+PROCESS_TIME = Histogram(
+    "processing_time_seconds",
+    "processing time for tasks"
+)
 
 
 app = web.Application()
@@ -97,6 +107,7 @@ async def bound_fetch(task_id, sem, url):
         return await fetch(task_id, url)
 
 
+@metrics_time(PROCESS_TIME)
 async def worker(task_id, urls):
     sem = asyncio.Semaphore(1000)
 
@@ -179,6 +190,7 @@ async def tasks(request):
 
 
 def run_service(host, port):
+    app.router.add_get("/metrics", aio.web.server_stats)
     app.router.add_post('/submit', submit)
     app.router.add_get('/tasks', tasks)
     app.router.add_get('/tasks/{task_id}', task_status)
@@ -193,7 +205,8 @@ def build_parser():
         help='path to custom config',
         default=os.path.join(os.path.dirname(__file__), "config.yaml")
     )
-    parser.add_argument('-P', dest='port', action='store', type=int,
+    parser.add_argument(
+        '-P', dest='port', action='store', type=int,
         help='port for API', default=7777
     )
     return parser
@@ -202,7 +215,7 @@ def build_parser():
 def main():
     parser = build_parser()
     params, other_params = parser.parse_known_args()
-    #conf = load_config(params.config)
+    # conf = load_config(params.config)
     run_service("0.0.0.0", params.port)
 
 
