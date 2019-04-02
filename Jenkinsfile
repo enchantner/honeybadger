@@ -4,22 +4,24 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Test development version') {
+            when {
+                not {
+                    branch 'master'
+                }
+            }
             steps {
-                echo 'Building..'
+                sh 'echo "ololo"'
+            }
+        }
+        stage('Build nightly image') {
+            when {
+                branch 'master'
+            }
+            steps {
                 script {
                     buildPythonPackage()
                 }
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
             }
         }
     }
